@@ -1,0 +1,66 @@
+{% extends "article/base.html" %}
+{% include "paginator.html" %}
+{% load staticfiles %}
+{% block title %}article list{% endblock %}
+{% block content %}
+<div>
+    <table class="table table-hover">
+        <tr>
+            <td>序号</td>
+            <td>标题</td>
+            <td>栏目</td>
+            <td>操作</td>
+        </tr>
+        {% for article in articles %}
+        <tr id="{{ article.id }}">
+            <td>{{ forloop.counter }}</td>
+            <td><a href="{{ article.get_absolute_url }}">{{ article.title }}</a></td>
+            <td>{{ article.column }}</td>
+            <td>
+                <a name="edit" href="{% url 'article:redit_article' article.id %}" ><span class="glyphicon glyphicon-pencil"></span></a>
+                <a name="delete" href="javascript:" onclick="delete_article(this,{{ article.id }})"><span class="glyphicon glyphicon-trash"
+                style="margin-left:20px"></span></a>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% include 'paginator.html' %}
+</div>
+
+<script type="text/javascript" src="{% static 'js/jquery.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/layer.js' %}"></script>
+<script type="text/javascript">
+
+     function delete_article(the,article_id){
+        <!--alert(column);-->
+        var name=$(the).parents("tr").children("td").eq(1).text();
+        <!--var name=column;-->
+        var index = layer.open({
+            type:1,
+            skin:"layui-layer-rim",
+            area:["400px","200px"],
+            title:"删除文章",
+            content:'<div class="text-center" style="margin-top:20px"><p>是否确定删除{'+name+'}</p></div>',
+            btn:['确定','取消'],
+            yes:function(index,layero){
+                $.ajax({
+                    url:'{% url "article:delete_article" %}',
+                    type:'POST',
+                    data:{"article_id":article_id},
+                    success:function(e){
+                        if(e=="1"){
+                            parent.location.reload();
+                            layer.msg("has been deleted");
+                        }else{
+                            layer.msg("删除失败")
+                        }
+                    },
+                });
+            },
+            btn2:function(index,layero){
+                layer.close(index);
+            }
+        });
+    };
+</script>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}article list{% endblock %}
+{% load staticfiles %}
+{% block content %}
+{% load article_tags %}
+
+<div class="row text-center vertical-middle-sm">
+    <h1 id="tl">阅读,丰富头脑,善化行为</h1>
+    <p>这里已经有{% total_articles %}篇文章</p>
+</div>
+<div class="container" style="background:#FEFEF2">
+<div class="col-md-10 ">
+        {% for article in articles %}
+        <div class="list-group" >
+                <a href="{{ article.get_url_path }}" class="list-group-item active" style="background:#FEFEF2;color:MediumBlue;border:none;">
+                    <h4 class="list-group-item-heading">{{article.title}}</h4>
+                </a>
+                <hr style="margin-top:0px">
+                 <div style="background:#FEFEF2">
+                    <p class="list-group-item-text">作者:
+                        <a href="{% url 'article:author_articles' article.author.username  %}">
+                            {{article.author.username}}
+                        </a>
+                    </p>
+                    <p class="list-group-item-text">概要:{{article.body|slice:'70'}}
+                        <a href="{{ article.get_url_path }}">
+                            阅读全文
+                        </a>
+                    </p>
+                    <p class="glyphicon glyphicon-thumbs-up">
+                        {{article.users_like.count}}_like
+                    </p><hr/>
+
+                </div>
+        </div>
+           {% endfor %}
+
+{% include "paginator.html" %}
+</div>
+
+</div>
+
+
+{% endblock %}

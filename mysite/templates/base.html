@@ -1,0 +1,24 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}{% endblock %}</title>
+    <!--<link rel="stylesheet" href="http://necolas.github.io/normalize.css/">-->
+    <!--<link rel="stylesheet" href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css"/>-->
+    <link rel="stylesheet" href="{% static 'css/bootstrap.css' %}">
+</head>
+<body background="{% static 'images/bg_body.gif' %}">
+    {% include "header.html" %}
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    {% include "footer.html" %}
+    {% block javascritp %}{% endblock %}
+    <!--<script src="http://libs.baidu.com/jquery/2.0.2/js/jquery.min.js"></script>-->
+    <!--<script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>-->
+</body>
+
+</html>

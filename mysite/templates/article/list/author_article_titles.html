@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load article_tags %}
+{% block title %}article list{% endblock %}
+{% load staticfiles %}
+{% block content %}
+
+<div class="row text-center vertical-middle-sm">
+    <h1>阅读,丰富头脑,善化行为</h1>
+</div>
+<div class="col-md-12" style="background:#FEFEF2">
+    <div class="col-md-8">
+            {% for article in articles %}
+            <div class="list-group" >
+                    <a href="{{ article.get_url_path }}" class="list-group-item active" style="background:#FEFEF2;color:MediumBlue;border:none;">
+                        <h4 class="list-group-item-heading">{{article.title}}</h4>
+                    </a>
+                    <hr style="margin-top:0px">
+                     <div style="background:#FEFEF2">
+                        <p class="list-group-item-text">作者:
+                            <a href="{% url 'article:author_articles' article.author.username  %}">
+                                {{article.author.username}}
+                            </a>
+                        </p>
+                        <p class="list-group-item-text">概要:{{article.body|slice:'70'}}
+                            <a href="{{ article.get_url_path }}">
+                                阅读全文
+                            </a>
+                        </p>
+                        <p class="glyphicon glyphicon-thumbs-up">
+                            {{article.users_like.count}}_like
+                        </p><hr/>
+
+                    </div>
+            </div>
+               {% endfor %}
+
+    {% include "paginator.html" %}
+    </div>
+
+    <div class="col-md-4" style="margin-top: 12px;">
+        <div>
+            {% if userinfo.photo %}
+            <img src="{{ userinfo.photo | striptags }}" class="img-circle" id="my_photo" name="user_face">
+            {% else %}
+            <img src="{% static 'images/lufei.jpeg' %}" style="width:250px" class="img-circle" id="my_photo" name="user_face">
+            {% endif %}
+            <p>{{ userBean.username }}</p>
+            <p>共发表文章{% author_total_articles userBean %}篇</p>
+            {% if userinfo %}
+                <p>{{ userinfo.company }}</p>
+                <p>{{ userinfo.aboutme }}</p>
+            {% else %}
+                <p>这个作者太懒了,什么也留下</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+
+
+
+
+{% endblock %}

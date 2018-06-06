@@ -1,0 +1,88 @@
+{% load poll_extras %}
+<!--<div class="pagination">-->
+    <!--<span class="step-links">-->
+        <!--{% if page.has_previous %}-->
+            <!--<a href="?page=1">首页</a>-->
+            <!--<a href="?page={{ page.previous_page_number }}">上一页</a>-->
+        <!--{% endif %}-->
+        <!--<span class="current">-->
+            <!--Page {{ page.number }} of {{ page.paginator.num_pages }}-->
+        <!--</span>-->
+        <!--{% if page.has_next %}-->
+            <!--<a href="?page={{ page.next_page_number }}">下一页</a>-->
+        <!--{% endif %}-->
+           <!--&lt;!&ndash;<a href="?page={{ page.end_index }}">尾页</a>&ndash;&gt;-->
+            <!--<a href="?page={{ page.end_index }}">尾页</a>-->
+    <!--</span>-->
+<!--</div>-->
+
+
+<!--<div class="ui pagination center aligned menu">-->
+ <!--{% if page.has_previous %}-->
+ <!--<a href="?page=1">首页</a>-->
+ <!--<a class="item" href="?page={{page.previous_page_number}}">上一页</a>-->
+ <!--{% endif %}-->
+ <!--{% for page_num in page.paginator.page_range %}-->
+ <!--<a class="item" href="?page={{page_num}}">-->
+ <!--{{page_num}}-->
+ <!--</a>-->
+ <!--{% endfor %}-->
+ <!--{% if page.has_next %}-->
+<!--<a class="item" href="?page={{page.next_page_number}}">下一页</a>-->
+ <!--{% endif %}-->
+<!--</div>-->
+
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        {% if page.has_previous %}
+            <li>
+                <a href="?page=1">首页</a>
+               <a href="?page={{page.previous_page_number}}" aria-label="Previous">
+                   <span aria-hidden="true">&laquo;</span>
+               </a>
+            </li>
+        {% endif %}
+
+        {% for pg in page.paginator.page_range %}
+            {% circle_page page.number pg %}
+        {% endfor %}
+
+        {% if page.has_next %}
+            <li>
+                <a href="?page={{ page.next_page_number }}" aria-label="NEXT">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+                <a href="?page={{ page.end_index }}">尾页</a>
+            </li>
+
+        {% endif %}
+            &nbsp;&nbsp;
+            <li>
+                <a style="height: 34px;width: 36px;overflow:hidden">
+                    <input type="text" style="border: none; width: 40px; height: 37px; margin-top: -7px; margin-left: -13px;" onkeyup="this.value=this.value.replace(/[^\d]/g,'') " onafterpaste="this.value=this.value.replace(/[^\d]/g,'')" id="go"/>
+                </a>
+            </li>
+            <li>
+               <!--<input type="button" class="btn btn-primary btn-1g" value="GO" onclick="go_to()">-->
+                <a id="qr" href="?page=" style="height: 34px;width: 46px;">GO</a>
+            </li>
+    </ul>
+</nav>
+
+<script type="text/javascript">
+     <!--function go_to(){-->
+        <!--var go_id = $("#go").val();-->
+        <!--url="{% url 'article:article_list' %}"+"?page="+go_id;-->
+        <!--window.open(url);-->
+
+
+    <!--}; -->
+
+    go.addEventListener("blur", function(event) {
+        var url = document.getElementById("qr").href;
+        var go = $("#go").val();
+        document.getElementById("qr").href=url+go;
+    });
+
+
+</script>

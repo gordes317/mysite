@@ -1,0 +1,291 @@
+{% extends "base.html" %}
+
+{% load staticfiles %}
+{% block title %}article detail{% endblock %}
+{% block content %}
+{% load article_tags %}
+{% with total_likes=article.users_like.count user_like=article.users_like.all %}
+<div class="container">
+    <div class="col-md-9">
+        <header>
+          <h1>{{article.title}}</h1>
+          <p>
+              <span style="margin-left:20px">作者:</span>
+              <a href="{% url 'article:author_articles' article.author.username %}">
+                {{article.author.username}}
+              </a>
+            <span style="margin-left:20px" id="total" class="glyphicon glyphicon-thumbs-up">{{total_likes}}like{{ total_likes | pluralize }}</span>
+            <span style="margin-left:20px" >{{total_views}}view{{ total_views | pluralize }}</span>
+          </p>
+        </header>
+
+        <link rel="stylesheet" href="{% static 'editor/css/editormd.preview.css' %}"/>
+        <div id="editormd-view">
+            <textarea id="append-test" style="display:none;"> {{ article.body }} </textarea>
+            <!--{{ article.body | markdown }}-->
+
+        </div>
+        <div>
+            <p class="text-center">
+                <a onclick="like_article({{article.id}}, 'like')" href="#"><span class="glyphicon glyphicon-thumbs-up">like</span></a>
+                <a onclick="like_article({{article.id}}, 'unlike')" href="#"><span class="glyphicon glyphicon-thumbs-down">unlike</span></a>
+            </p>
+            <p nowrap class="text-center"><strong>点赞本文的读者</strong></p>
+            {% for user in article.users_like.all %}
+            <p nowrap class="text-center">{{ user.username }}</p>
+            {% empty %}
+            <p class="text-center">还没有人对此文章表态</p>
+            {% endfor %}
+        </div>
+        <hr>
+        <div >
+            <div id="ct">
+                <h3><span class="glyphicon glyphicon-bullhorn"></span>
+                    本文有{{article.comments.count}}评论
+                </h3>
+                {% for comment in article.comments.all %}
+                <div  style="background:#ADADAD;">
+                    <div>
+                        <p style="margin-left:20px;"><strong >{{ comment.commentator }}</strong>说:<b>{{ comment.body }}</b></p>
+                        <p style="margin-left:30px;">{{ comment.created }}</p>
+                        {% if comment.commentator == user.username %}
+                            <a name="delete" href="javascript:" onclick="del_comment(this,{{ comment.id }})">
+                                <span class="glyphicon glyphicon-trash" style="margin-left:20px"></span>
+                            </a>
+                        {% endif %}
+                        <hr>
+                    </div>
+                    <div >
+                        {% for rep in  replys %}
+                            {% if rep.reply_id == comment.id %}
+                                <p><strong><a href="javascript:" onclick="reply(this,{{ rep.reply_id }},'{{ rep.repler }}','{{ user.username }}')">{{ rep.repler }}</a></strong>回复
+                                   <strong><a href="javascript:" onclick="reply(this,{{ rep.reply_id }},'{{ rep.commentator }}','{{ user.username }}')">{{ rep.commentator }}</a></strong>说:{{ rep.content }}
+
+                                </p>
+
+                            {% endif %}
+                        {% endfor %}
+
+                        <div>
+                            {% if comment.commentator != user.username %}
+                                <div id="rep2{{ comment.id }}">
+                                    <a href="javascript:"  class="btn btn-primary btn-1g" onclick="reply2({{ comment.id }},'{{ comment.commentator }}')">REPLY</a>
+                                </div>
+                            {% endif %}
+                            <div id="{{ comment.id }}" style="display:none;">
+                                <!--<input type="text" id="content">-->
+                                <textarea class="{{ comment.id }}" ></textarea>
+                                <a href="javascript:;" onclick="replyContent(
+                                '{{ comment.id }}','{{ user.username }}')"
+                                   class="btn btn-primary btn-1g">SUBMIT
+                                </a>
+                            </div>
+
+                        </div>
+
+                    </div>
+                    {% include "paginator.html" %}
+
+                </div>
+                <hr>
+                {% empty %}
+                <p>没有评论</p>
+                {% endfor %}
+            </div>
+            <h3><span class="glyphicon glyphicon-send"></span>看文章,发评论,不要沉默</h3>
+            <form action="." method="post" class="form-horizontal" role="form">{% csrf_token %}
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">
+                        评论员
+                    </label>
+                    <div class="col-sm-10" id="user_name">
+                        {{ user.username }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="inputEmail3" class="col-sm-2 control-label">评论</label>
+                    <div class="col-sm-10" >
+                        {{ comment_form.body }}
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        <!--<p><input type="submit" name="发评论" class="btn btn-primary"></p>-->
+                        <input type="button" onclick="publish_commets()" class="btn btn-primary btn-1g" value="发布" >
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <p class="text-center"><h3>最受欢迎的文章</h3></p>
+        <ol>
+            {% for article_rank in most_viewed %}
+            <li>
+                <a href="{{article_rank.get_url_path}}">{{ article_rank.title }}</a>
+            </li>
+            {% endfor %}
+        </ol>
+        <hr>
+        <p class="text-center"><h3>最新文章</h3></p>
+        {% latest_articles  %}
+        <hr>
+        <p class="text-center"><h3>最多评论文章</h3></p>
+        {% most_commented_articles as most_comments%}
+        <ul>
+            {% for comment_article in most_comments %}
+            <li>
+                <a href="{{comment_article.get_url_path}}">{{ comment_article.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+<script src="{% static 'js/jquery.js' %}"></script>
+<script src="{% static 'editor/lib/marked.min.js' %}"></script>
+<script src="{% static 'editor/lib/prettify.min.js' %}"></script>
+<script src="{% static 'editor/lib/raphael.min.js' %}"></script>
+<script src="{% static 'editor/lib/underscore.min.js' %}"></script>
+<script src="{% static 'editor/lib/sequence-diagram.min.js' %}"></script>
+<script src="{% static 'editor/lib/flowchart.min.js' %}"></script>
+<script src="{% static 'editor/lib/jquery.flowchart.min.js' %}"></script>
+<script src="{% static 'editor/editormd.js' %}"></script>
+
+<script type="text/javascript" src="{% static 'js/layer.js' %}"></script>
+
+<script >
+    $(function(){
+        editormd.markdownToHTML("editormd-view",{
+        htmlDecode:"style,script,iframe",
+        emoji:true,
+        taskList:true,
+        tex:true,
+        flowChart:true,
+        sequenceDiagram:true,
+        });
+    });
+
+    function like_article(id,action){
+        $.ajax({
+            url:"{% url 'article:like_article' %}",
+            type:"POST",
+            data:{"id":id,"action":action},
+            success:function(e){
+                if(e=="no"){
+                    layer.msg("发生异常,请查看日志!");
+                }else{
+                    $("#total").text(e+"like");
+                    layer.msg("我会继续努力的");
+                }
+            },
+        });
+
+    };
+
+    function publish_commets(){
+     var body = $("#id_body").val();
+     var user_name = $("#user_name").text().trim();
+         $.ajax({
+            url:"{% url 'article:list_article_detail' article.id article.slug %}",
+            type:"POST",
+            data:{"body":body,"user_name":user_name},
+            success:function(e){
+                if(e=="1"){
+                     layer.msg("评论成功")
+                     parent.location.reload();
+
+                }else{
+
+                    layer.msg("请填写评论内容");
+                }
+            },
+        });
+      };
+
+        function del_comment(the,comment_id){
+        var index = layer.open({
+            type:1,
+            skin:"layui-layer-rim",
+            area:["400px","200px"],
+            title:"删除评论",
+            content:'<div class="text-center" style="margin-top:20px"><p>是否确定删除该评论</p></div>',
+            btn:['确定','取消'],
+            yes:function(index,layero){
+
+                $.ajax({
+                    url:'{% url 'article:del_comment' %}',
+                    type:'POST',
+                    data:{"comment_id":comment_id},
+                    success:function(e){
+                        if(e=="1"){
+                            parent.location.reload();
+                            layer.msg("has been deleted");
+                        }else{
+                            layer.msg("删除失败")
+                        }
+                    },
+                });
+            },
+            btn2:function(index,layero){
+                layer.close(index);
+            }
+        });id
+       };
+
+
+
+       function replyContent(comment_id,repler){
+         var body = $("."+comment_id).val();
+         var commentator=document.getElementById(comment_id).className;
+         if( body==null || body.trim()==""){
+            <!--$("."+comment_id).val('');-->
+            return;
+         }
+             $.ajax({
+                url:"{% url 'article:reply_comment' %}",
+                type:"POST",
+                data:{"body":body,"comment_id":comment_id,"commentator":commentator,"repler":repler},
+                success:function(e){
+                    if(e=="1"){
+                         layer.msg("回复成功")
+
+                    }else{
+
+                        layer.msg("请填写评论内容");
+                    }
+                    parent.location.reload();
+                },
+            });
+          };
+
+
+
+         function reply(the,comment_id,commentator,relpler){
+            debugger;
+            if (commentator == relpler)
+            {
+                return;
+            }
+            if(document.getElementById("rep2"+comment_id)!=null){
+                document.getElementById("rep2"+comment_id).style.display="none"
+            }
+            $("#"+comment_id).removeClass()
+            $("#"+comment_id).addClass(commentator);
+            document.getElementById(comment_id).style.display = "block";
+         };
+
+         function reply2(comment_id,commentator){
+            if(document.getElementById("rep2"+comment_id)!=null){
+                document.getElementById("rep2"+comment_id).style.display="none"
+            }
+            $("#"+comment_id).removeClass()
+            $("#"+comment_id).addClass(commentator);
+            document.getElementById(comment_id).style.display = "block";
+         }
+
+
+
+
+</script>
+{% endwith %}
+{% endblock %}
